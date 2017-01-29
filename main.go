@@ -12,26 +12,27 @@ type ocrHolder struct {
 }
 
 // goroutine channel setup for single OCR
-func convertSingle(client *gosseract.Client, res ocrHolder, language string, resultChan chan ocrHolder) {
+func convertSingle(res ocrHolder, language string, resultChan chan<- ocrHolder) {
 	parameters := gosseract.Params{Src: res.path, Languages: language}
 	res.ocrResult = gosseract.Must(parameters)
 	resultChan <- res
 }
 
 func main() {
-	resultChannel := make(chan ocrHolder)
+	resultChannel := make(chan ocrHolder, 1)
 	fileList := []string{"testimage1.png", "testimage2.png"}
-	client, _ := gosseract.NewClient()
+	// client, _ := gosseract.NewClient()
 	lang := "eng"
 
 	for _, path := range fileList {
 		oh := ocrHolder{path: path}
-		go convertSingle(client, oh, lang, resultChannel)
+		go convertSingle(oh, lang, resultChannel)
 	}
 
-	for elem := range resultChannel {
-		fmt.Println(elem)
+	for i := 0; i < len(fileList); i++ {
+		fmt.Println(<-resultChannel)
 	}
+
 }
 
 // // converts a list of files
