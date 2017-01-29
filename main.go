@@ -1,6 +1,10 @@
 package main
 
-import "github.com/otiai10/gosseract"
+import (
+	"path/filepath"
+
+	"github.com/otiai10/gosseract"
+)
 
 type ocrHolder struct {
 	path      string
@@ -16,9 +20,11 @@ func convertSingle(res ocrHolder, language string, resultChan chan<- ocrHolder) 
 
 func main() {
 	resultChannel := make(chan ocrHolder, 1)
-	fileList := []string{"testimage1.png", "testimage2.png"}
+	// fileList := []string{"testimage1.png", "testimage2.png"}
 	// client, _ := gosseract.NewClient()
-	lang := "eng"
+	fileList, _ := filepath.Glob("/home/tim/Pictures/ocrtestimages/*.png")
+	fileList = fileList[0:500]
+	lang := "eng" // set language
 	Results := make([]ocrHolder, len(fileList))
 
 	for _, path := range fileList {
