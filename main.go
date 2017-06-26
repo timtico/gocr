@@ -16,7 +16,6 @@ type ocrHolder struct {
 type ocrResults []ocrHolder
 
 // in order to be able to sort we need to implement a three functions
-
 // returns how many elements in the collection
 func (slice ocrResults) Len() int {
 	return len(slice)
@@ -33,14 +32,16 @@ func (slice ocrResults) Swap(i, j int) {
 }
 
 // goroutine channel setup for single OCR
+// takes an OC holder struct
 func convertSingle(res ocrHolder, language string, resultChan chan<- ocrHolder) {
 	parameters := gosseract.Params{Src: res.path, Languages: language}
 	res.ocrResult = gosseract.Must(parameters)
 	resultChan <- res
 }
 
+// processes a list of paths with OCR. puts file paths on the OCR convert pipeline
+// reads processed items from the results pipeline and adds it to a container struct
 func convertMultiple(fileList []string, language string, resultChannel chan ocrHolder) (Results ocrResults) {
-	//Results := make([]ocrHolder, len(fileList))
 	Results = make(ocrResults, len(fileList))
 
 	for _, path := range fileList {
@@ -54,17 +55,16 @@ func convertMultiple(fileList []string, language string, resultChannel chan ocrH
 	}
 
 	return
-
 }
 
 func main() {
 	resultChannel := make(chan ocrHolder, 1)
-	fileList, _ := filepath.Glob("/home/tim/Pictures/ocrtestimages/*.png")
-	fileList = fileList[0:500]
+	fileList, _ := filepath.Glob("/home/tim/Pictures/schadeformulier2bw.png")
+	// fileList = fileList[0:500]
 	lang := "eng" // set language
 
 	// convert multiple, writes to return channel
 	Results := convertMultiple(fileList, lang, resultChannel)
 	sort.Sort(Results)
-	fmt.Println(Results[0:10])
+	fmt.Println(Results)
 }
